@@ -50,6 +50,8 @@ class SendAmo
         $sql = "SELECT * FROM {$this->tbmessages} WHERE country IS NULL AND LIMIT 5";
         $result = $this->conn->query($sql);
 
+        echo $sql . "\n";
+
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
 
