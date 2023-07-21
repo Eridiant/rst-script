@@ -55,22 +55,6 @@ class SendAmo
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
 
-
-
-                // Get the ID of the row
-                $id = $row['id'];
-
-                // Update the row with new values
-                $updateSql = "UPDATE {$this->tbmessages} 
-                            SET country = 'adsf '
-                            WHERE id = $id";
-
-                if ($this->conn->query($updateSql) === TRUE) {
-                    echo "Row with ID $id updated successfully.\n";
-                } else {
-                    echo "Error updating row with ID $id: " . $this->conn->error . "\n";
-                }
-                continue;
                 // create lead
                 if (empty($row['status_amo_id'])) {
                     try {
