@@ -1,6 +1,8 @@
 # composer vendor dir
 /vendor
 
+.well-known
+
 # composer itself is not needed
 composer.phar
 composer.lock
