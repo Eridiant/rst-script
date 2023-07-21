@@ -41,16 +41,17 @@ class SendAmo
 
     public function sendApplication()
     {
+        $timeLimit = strtotime('-5 days');
+        // Query to select max 5 rows with status_link_amo_id = 0
+        $sql = "SELECT * FROM {$this->tbmessages} WHERE status_link_amo_id = 1 AND created_at > {$timeLimit} LIMIT 5";
+        $result = $this->conn->query($sql);
         var_dump('<pre>');
-        var_dump($this->amo->lead->apiList(['id' => 36653498]));
+        var_dump($result[0]->status_amo_id, $result);
         // var_dump($link->apiLink());
         // var_dump($this->amo->contact->apiList(['id' => 52469684]));
         var_dump('</pre>');
         die;
         return;
-        // Query to select max 5 rows with status_link_amo_id = 0
-        $sql = "SELECT * FROM {$this->tbmessages} WHERE status_link_amo_id = 0 LIMIT 5";
-        $result = $this->conn->query($sql);
 
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
