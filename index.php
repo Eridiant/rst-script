@@ -28,6 +28,8 @@ class SendAmo
 
         $this->tbmessages = $_ENV['TB_MESSAGES'];
 
+        sleep(5);
+
         $this->amo = new Client($subdomain, $login, $apikey);
 
         // Connect to the database
@@ -43,39 +45,9 @@ class SendAmo
     public function sendApplication()
     {
         $timeLimit = strtotime('-3 days');
-        // Query to select max 5 rows with status_link_amo_id = 0
-        $sql = "SELECT * FROM {$this->tbmessages} WHERE status_link_amo_id = 1 AND created_at > {$timeLimit} LIMIT 5";
+
+        $sql = "SELECT * FROM {$this->tbmessages} WHERE status_link_amo_id = 0 AND created_at > {$timeLimit} LIMIT 5";
         $result = $this->conn->query($sql);
-        $sq = "SELECT * FROM {$this->tbmessages} WHERE status_link_amo_id = 1 LIMIT 5";
-        $result = $this->conn->query($sql);
-        // var_dump('<pre>');
-        // var_dump($result[0]->status_amo_id, $result);
-        // // var_dump($link->apiLink());
-        // // var_dump($this->amo->contact->apiList(['id' => 52469684]));
-        // var_dump('</pre>');
-
-        if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                echo $row['city'] . '<br>';
-
-
-                // Get the ID of the row
-                $id = $row['id'];
-
-                // Update the row with new values
-                $updateSql = "UPDATE {$this->tbmessages} 
-                            SET country = 'adfa фывфаыва'
-                            WHERE id = $id";
-
-                if ($this->conn->query($updateSql) === TRUE) {
-                    echo "Row with ID $id updated successfully.\n";
-                } else {
-                    echo "Error updating row with ID $id: " . $this->conn->error . "\n";
-                }
-            }
-        }
-        die;
-        return;
 
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
