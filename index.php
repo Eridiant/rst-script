@@ -42,6 +42,7 @@ class SendAmo
     public function sendApplication()
     {
         $timeLimit = strtotime('-1 days');
+        $timeLimit = strtotime("-3 hour");
         // Query to select max 5 rows with status_link_amo_id = 0
         $sql = "SELECT * FROM {$this->tbmessages} WHERE status_link_amo_id = 1 AND created_at > {$timeLimit} LIMIT 5";
         $result = $this->conn->query($sql);
