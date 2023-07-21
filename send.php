@@ -8,6 +8,7 @@ class SendAmo
 {
     private $conn;
     private $amo;
+    private $tbmessages;
 
     public function __construct()
     {
@@ -25,6 +26,7 @@ class SendAmo
         $login = $_ENV['AMO_LOGIN'];
         $apikey = $_ENV['AMO_APIKEY'];
 
+        $this->tbmessages = $_ENV['TB_MESSAGES'];
 
         $this->amo = new Client($subdomain, $login, $apikey);
 
@@ -37,70 +39,100 @@ class SendAmo
         }
     }
 
-    public function saveIdToDatabase($id)
-    {
-        // Sanitize the ID input (to prevent SQL injection)
-        $sanitizedId = $this->conn->real_escape_string($id);
-
-        // Prepare and execute the SQL query to insert the ID into the database
-        $sql = "INSERT INTO rst_key (id) VALUES ('$sanitizedId')";
-        if ($this->conn->query($sql) === TRUE) {
-            echo "ID saved successfully!";
-        } else {
-            echo "Error: " . $sql . "<br>" . $this->conn->error;
-        }
-    }
-
     public function sendApplication()
     {
-        try {
-            // $key = Key::find()->where(['id' => 1])->one();
-            // // Создание клиента
-            // $subdomain = $key->key;            // Поддомен в амо срм
-            // $login     = $key->value;            // Логин в амо срм
-            // $apikey    = $key->content;            // api ключ
+        var_dump('<pre>');
+        var_dump($this->amo->lead->apiList(['id' => 36653498]));
+        // var_dump($link->apiLink());
+        // var_dump($this->amo->contact->apiList(['id' => 52469684]));
+        var_dump('</pre>');
+        die;
+        return;
+        // Query to select max 5 rows with status_link_amo_id = 0
+        $sql = "SELECT * FROM {$this->tbmessages} WHERE status_link_amo_id = 0 LIMIT 5";
+        $result = $this->conn->query($sql);
 
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
 
-            // create lead
-            $lead = $this->amo->lead;
-            $lead['name'] = 'ГуглГрузия';
-            $lead['responsible_user_id'] = 5847651; // ID ответсвенного 
-            $lead['pipeline_id'] = 5581734; // ID воронки
-            $lead['status_id'] = 49943004; // for check
+                // create lead
+                if (empty($row['status_amo_id'])) {
+                    try {
+                        $lead = $this->amo->lead;
+                        $lead['name'] = 'ГуглГрузия';
+                        $lead['responsible_user_id'] = 5847651; // ID ответсвенного 
+                        $lead['pipeline_id'] = 5581734; // ID воронки
+                        $lead['status_id'] = 49943004; // for check
 
-            $lead['tags'] = ['ГуглГрузия'];
+                        $lead['tags'] = ['ГуглГрузия'];
+                        $lead->addCustomField(815608, $row['message']);
 
-            // $lead->addCustomField(809203, $request->post('name'));
+                        // $lead->addCustomField(319703, 'test@test.com');
 
-            // $lead->addCustomField(319701, $request->post('phone'));
+                        $lead->addCustomField(673225, 'ddageorgia.com');
 
-            $lead->addCustomField(815608, $request->post('message'));
+                        // $lead->addCustomField(799655, 'ip');
 
-            // $lead->addCustomField(319703, 'test@test.com');
+                        $lead_amo_id = (int)$lead->apiAdd();
+                    } catch (\Throwable $th) {
+                        //throw $th;
+                        continue;
+                    }
+                } else {
+                    $lead_amo_id = $row['status_amo_id'];
+                }
 
-            $lead->addCustomField(673225, 'ddageorgia.com');
+                // create contact
+                if (empty($row['status_contact_amo_id'])) {
+                    try {
+                        $contact = $this->amo->contact;
+                        $contact['name'] = $row['name'];
+                        $contact->addCustomField(171145, [
+                            [$row['phone'], 'WORK'],
+                        ]);
+                        $contact_amo_id = $contact->apiAdd();
+            
+                    } catch (\Throwable $th) {
+                        // throw $th;
+                        // var_dump($th);
+                        continue;
+                    }
+                } else {
+                    $contact_amo_id = $row['status_contact_amo_id'];
+                }
 
-            // $lead->addCustomField(799655, 'ip');
+                // create link
+                if (empty($row['status_link_amo_id'])) {
+                    try {
+                        $link = $this->amo->links;
+                        $link['from'] = 'leads';
+                        $link['from_id'] = $lead_amo_id;
+                        $link['to'] = 'contacts';
+                        $link['to_id'] = $contact_amo_id;
+            
+                        $link_amo_id = json_decode($link->apiLink(), true);
+                    } catch (\Throwable $th) {
+                        //throw $th;
+                        continue;
+                    }
+                }
 
-            $message->status_amo_id = $lead->apiAdd();
+                // Get the ID of the row
+                $id = $row['id'];
 
-            $contact = $this->amo->contact;
-            $contact['name'] = $request->post('name');
-            $contact->addCustomField(171145, [
-                [$request->post('phone'), 'WORK'],
-            ]);
-            $message->status_contact_amo_id = $contact->apiAdd();
+                // Update the row with new values
+                $updateSql = "UPDATE {$this->tbmessages} 
+                            SET status_amo_id = $lead_amo_id,
+                                status_contact_amo_id = $contact_amo_id,
+                                status_link_amo_id = $link_amo_id
+                            WHERE id = $id";
 
-            $link = $this->amo->links;
-            $link['from'] = 'leads';
-            $link['from_id'] = $message->status_amo_id;
-            $link['to'] = 'contacts';
-            $link['to_id'] = $message->status_contact_amo_id;
-
-            $message->status_link_amo_id = json_decode($link->apiLink(), true);
-        } catch (\Throwable $th) {
-            // throw $th;
-            // var_dump($th);
+                if ($this->conn->query($updateSql) === TRUE) {
+                    echo "Row with ID $id updated successfully.\n";
+                } else {
+                    echo "Error updating row with ID $id: " . $this->conn->error . "\n";
+                }
+            }
         }
     }
 
@@ -112,53 +144,8 @@ class SendAmo
 }
 
 
-// Function to update the rst_message table with new values
-function updateRstMessageTable($statusAmoId, $statusContactAmoId, $statusLinkAmoId) {
-    $host = 'your_database_host';
-    $db   = 'your_database_name';
-    $user = 'your_database_username';
-    $pass = 'your_database_password';
+$db = new SendAmo();
 
-    // Create a new MySQLi instance
-    $mysqli = new mysqli($host, $user, $pass, $db);
+$db->sendApplication();
 
-    // Check if the connection was successful
-    if ($mysqli->connect_error) {
-        return "Connection failed: " . $mysqli->connect_error;
-    }
-
-    // Prepare the SQL query
-    $sql = "UPDATE rst_message SET status_amo_id = ?, status_contact_amo_id = ?, status_link_amo_id = ?";
-
-    // Prepare the statement
-    $stmt = $mysqli->prepare($sql);
-
-    // Bind parameters and execute the query
-    $stmt->bind_param("iii", $statusAmoId, $statusContactAmoId, $statusLinkAmoId);
-
-    // Execute the update query
-    if ($stmt->execute()) {
-        $rowCount = $stmt->affected_rows;
-        if ($rowCount > 0) {
-            $stmt->close();
-            $mysqli->close();
-            return "Update successful. $rowCount row(s) updated.";
-        } else {
-            $stmt->close();
-            $mysqli->close();
-            return "No rows were updated.";
-        }
-    } else {
-        $stmt->close();
-        $mysqli->close();
-        return "Error executing the query: " . $mysqli->error;
-    }
-}
-
-// Check if the ID parameter is provided in the API call
-if (isset($_GET['id'])) {
-    $id = $_GET['id'];
-    saveIdToDatabase($id);
-} else {
-    echo "Error: ID parameter not provided.";
-}
+$db->closeConnection();
