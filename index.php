@@ -32,6 +32,7 @@ class SendAmo
 
         // Connect to the database
         $this->conn = new mysqli($dbHost, $dbUsername, $dbPassword, $dbName);
+        $this->conn->set_charset("utf8mb4");
 
         // Check connection
         if ($this->conn->connect_error) {
@@ -55,7 +56,7 @@ class SendAmo
 
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
-                echo $row['country'] . '<br>';
+                echo $row['city'] . '<br>';
 
 
                 // Get the ID of the row
