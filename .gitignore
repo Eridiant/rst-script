@@ -1,0 +1,10 @@
+# composer vendor dir
+/vendor
+
+# composer itself is not needed
+composer.phar
+composer.lock
+
+.htaccess
+
+.env

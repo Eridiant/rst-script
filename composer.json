@@ -1,0 +1,6 @@
+{
+    "require": {
+        "vlucas/phpdotenv": "^5.5",
+        "dotzero/amocrm": "^0.3.29"
+    }
+}
