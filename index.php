@@ -41,8 +41,7 @@ class SendAmo
 
     public function sendApplication()
     {
-        $timeLimit = strtotime('-1 days');
-        $timeLimit = strtotime("-3 hour");
+        $timeLimit = strtotime('-3 days');
         // Query to select max 5 rows with status_link_amo_id = 0
         $sql = "SELECT * FROM {$this->tbmessages} WHERE status_link_amo_id = 1 AND created_at > {$timeLimit} LIMIT 5";
         $result = $this->conn->query($sql);
@@ -56,10 +55,25 @@ class SendAmo
 
         if ($result->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
-                echo $row['status_amo_id'] . '<br>';
+                echo $row['country'] . '<br>';
+
+
+                // Get the ID of the row
+                $id = $row['id'];
+
+                // Update the row with new values
+                $updateSql = "UPDATE {$this->tbmessages} 
+                            SET country = 'adfa фывфаыва'
+                            WHERE id = $id";
+
+                if ($this->conn->query($updateSql) === TRUE) {
+                    echo "Row with ID $id updated successfully.\n";
+                } else {
+                    echo "Error updating row with ID $id: " . $this->conn->error . "\n";
+                }
             }
         }
-        die($timeLimit);
+        die;
         return;
 
         if ($result->num_rows > 0) {
