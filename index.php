@@ -58,7 +58,7 @@ class SendAmo
                 echo $row['status_amo_id'] . '<br>';
             }
         }
-        die;
+        die($timeLimit);
         return;
 
         if ($result->num_rows > 0) {
