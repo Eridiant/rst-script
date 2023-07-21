@@ -59,7 +59,7 @@ class SendAmo
                 echo $row['status_amo_id'] . '<br>';
             }
         }
-
+        echo '==========<br>';
         if ($results->num_rows > 0) {
             while ($row = $result->fetch_assoc()) {
                 echo $row['status_amo_id'] . '<br>';
