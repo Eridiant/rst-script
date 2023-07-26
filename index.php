@@ -28,7 +28,7 @@ class SendAmo
 
         $this->tbmessages = $_ENV['TB_MESSAGES'];
 
-        sleep(5);
+        // sleep(5);
 
         $this->amo = new Client($subdomain, $login, $apikey);
 
@@ -46,8 +46,8 @@ class SendAmo
     {
         $timeLimit = strtotime('-3 days');
 
-        // $sql = "SELECT * FROM {$this->tbmessages} WHERE status_link_amo_id = 0 AND created_at > {$timeLimit} LIMIT 5";
-        $sql = "SELECT * FROM {$this->tbmessages} WHERE country IS NULL LIMIT 5";
+        $sql = "SELECT * FROM {$this->tbmessages} WHERE status_link_amo_id = 0 AND created_at > {$timeLimit} LIMIT 5";
+        // $sql = "SELECT * FROM {$this->tbmessages} WHERE country IS NULL LIMIT 5";
         $result = $this->conn->query($sql);
 
         echo $sql . "\n";
